@@ -1,52 +1,85 @@
-//
-//  ModelManager.swift
-//  CaffeinePlanner
-//
-//  Created by Mykhailo Kravchuk on 24/01/2025.
-//
-
 import Foundation
 import CoreML
 
 class ModelManager {
     static let shared = ModelManager()
-
-    private let model: RandomForest
-
+    
+    private var model: LinearRegression
+    
     private init() {
-        guard let loadedModel = try? RandomForest(configuration: MLModelConfiguration()) else {
-            fatalError("Не вдалося завантажити модель RandomForest.mlmodel")
+        guard let loadedModel = try? LinearRegression(configuration: MLModelConfiguration()) else {
+            fatalError("Nie udało się załadować modelu LinearRegression")
         }
         self.model = loadedModel
     }
 
-    func predict(age: Double, gender: Double, weight: Double, activity: Double, sleepHours: Double) -> Double? {
+    func predict(
+        age: Double,
+        gender: Double,
+        weight: Double,
+        height: Double,
+        activityLevel: Double,
+        sleepHours: Double,
+        cupsPerDay: Double,
+        caffeineSensitivity: Double,
+        doctorRecommendation: Double,
+        coffeeTypeLatte: Double,
+        coffeeTypeEspresso: Double,
+        coffeeTypeAmericano: Double,
+        coffeeTypeBlackCoffee: Double,
+        coffeeTypeCappuccino: Double,
+        medicalNone: Double,
+        medicalHypertension: Double,
+        medicalDiabetes: Double,
+        medicalAnxiety: Double,
+        medicalPregnancy: Double,
+        coffeeGoalEnergy: Double,
+        coffeeGoalTaste: Double,
+        timeOfDayMorning: Double,
+        timeOfDayAfternoon: Double,
+        timeOfDayEvening: Double,
+        timeOfDayNight: Double
+    ) -> Double? {
         do {
-            // Нормалізація годин сну
-            let normalizedSleepHours = sleepHours / 12.0
-
-            // Нормалізація віку
-            let normalizedAge = (age - 16.0) / (140.0 - 16.0)
-
-            // Нормалізація ваги
-            let normalizedWeight = (weight - 16.0) / (140.0 - 16.0)
-
-            // Передаємо нормалізовані вхідні дані у модель
-            let input = RandomForestInput(
-                age: normalizedAge,
+            let input = try LinearRegressionInput(
+                age: age,
                 gender: gender,
-                weight: normalizedWeight,
-                activity: activity,
-                sleep_hours: normalizedSleepHours
+                weight: weight,
+                height: height,
+                activity_level: activityLevel,
+                sleep_hours: sleepHours,
+                cups_per_day: cupsPerDay,
+                caffeine_sensitivity: caffeineSensitivity,
+                doctor_recommendation: doctorRecommendation,
+                
+                coffee_type_Latte: coffeeTypeLatte,
+                coffee_type_Espresso: coffeeTypeEspresso,
+                coffee_type_Americano: coffeeTypeAmericano,
+                coffee_type_BlackCoffee: coffeeTypeBlackCoffee,
+                coffee_type_Cappuccino: coffeeTypeCappuccino,
+                
+                medical_None: medicalNone,
+                medical_Hypertension: medicalHypertension,
+                medical_Diabetes: medicalDiabetes,
+                medical_Anxiety: medicalAnxiety,
+                medical_Pregnancy: medicalPregnancy,
+                
+                coffee_goal_Energy: coffeeGoalEnergy,
+                coffee_goal_Taste: coffeeGoalTaste,
+                
+                time_of_day_Morning: timeOfDayMorning,
+                time_of_day_Afternoon: timeOfDayAfternoon,
+                time_of_day_Evening: timeOfDayEvening,
+                time_of_day_Night: timeOfDayNight
             )
-
-            // Отримуємо прогноз
-            let prediction = try model.prediction(input: input)
-            return prediction.prediction
+            
+            // Wykonujemy prognozę
+            let output = try model.prediction(input: input)
+            return output.prediction
+            
         } catch {
-            print("Помилка прогнозу: \(error.localizedDescription)")
+            print("Błąd podczas tworzenia prognozy: \(error)")
             return nil
         }
     }
 }
-
